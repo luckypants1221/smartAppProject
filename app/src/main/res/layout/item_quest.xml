@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="10dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/tvQuestTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="일일 학습 30분" />
+        <TextView
+            android:id="@+id/tvReward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+30P"
+            android:textColor="#888888"/>
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/cbDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
