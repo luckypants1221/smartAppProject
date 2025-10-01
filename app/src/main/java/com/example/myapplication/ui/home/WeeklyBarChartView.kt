@@ -24,6 +24,7 @@ class WeeklyBarChartView @JvmOverloads constructor(
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0x66000000.toInt() // 반투명 라벨
         textSize = 28f
+        color = 0xFF9E9E9E.toInt()
     }
 
     var values: List<Int> = emptyList()
@@ -36,46 +37,50 @@ class WeeklyBarChartView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (values.isEmpty()) return
 
-        val padH = paddingLeft + paddingRight
-        val padV = paddingTop + paddingBottom
-        val w = width - padH
-        val h = height - padV
+        val density = resources.displayMetrics.density
+        val sideMarginPx = 16f * density // 좌우 마진 16dp
+        val padL = paddingLeft + sideMarginPx.toInt()
+        val padR = paddingRight + sideMarginPx.toInt()
+        val padT = paddingTop
+        val labelExtra = (labelPaint.textSize + 12f).toInt()
+        val padB = paddingBottom + labelExtra
 
-        // 그리드 가이드(바닥선)
+        val w = width - padL - padR
+        val h = height - padT - padB
+        val baseY = (height - padB).toFloat()
+
+        // 바닥선
         canvas.drawLine(
-            paddingLeft.toFloat(),
-            (height - paddingBottom - 1).toFloat(),
-            (width - paddingRight).toFloat(),
-            (height - paddingBottom - 1).toFloat(),
+            padL.toFloat(), baseY - 1f,
+            (width - padR).toFloat(), baseY - 1f,
             gridPaint
         )
 
         val count = values.size
-        val maxV = max(1, values.maxOrNull() ?: 1)
-        val barSpace = w / (count * 1.8f) // 간격
-        val barWidth = barSpace
-        var x = paddingLeft + barSpace / 2
+        val spacingFactor = 2.0f // 1.8f → 2.0f로 간격 넓힘
+        val barSpace = w / (count * spacingFactor)
+        val barWidth = barSpace // 필요하면 barWidth를 0.9f*barSpace 등으로 더 줄여도 됨
+        var x = padL + barSpace / 2f
+
+        val days = arrayOf("일","월","화","수","목","금","토")
+        val maxV = (values.maxOrNull() ?: 1).coerceAtLeast(1)
 
         values.forEachIndexed { idx, v ->
             val ratio = v.toFloat() / maxV
-            val barH = ratio * (h * 0.8f) // 위쪽 20% 여백
+            val barH = ratio * (h * 0.9f)
             val left = x
-            val top = (height - paddingBottom) - barH
+            val top = baseY - barH
             val right = x + barWidth
-            val bottom = (height - paddingBottom).toFloat()
+            val bottom = baseY
 
-            canvas.drawRoundRect(
-                left, top, right, bottom,
-                barWidth / 3f, barWidth / 3f, barPaint
-            )
+            canvas.drawRoundRect(left, top, right, bottom, barWidth/3f, barWidth/3f, barPaint)
 
-            // 요일 라벨(일~토)
-            val day = "일월화수목금토"[idx % 7].toString()
-            val textW = labelPaint.measureText(day)
+            val day = days[idx % 7]
+            val tw = labelPaint.measureText(day)
             canvas.drawText(
                 day,
-                left + (barWidth - textW) / 2f,
-                bottom + labelPaint.textSize + 6f,
+                left + (barWidth - tw) / 2f,
+                baseY + labelPaint.textSize + 6f,
                 labelPaint
             )
 

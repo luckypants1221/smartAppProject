@@ -22,10 +22,14 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         val navView = findViewById<NavigationView>(R.id.navigationView)
 
-        // 툴바 우측 아이콘 클릭 → 사이드 열기
-        toolbar.setOnMenuItemClickListener { item: MenuItem ->
+        toolbar.setNavigationIcon(android.R.drawable.ic_menu_sort_by_size) // 벡터 아이콘
+        toolbar.setNavigationOnClickListener {
+            drawer.openDrawer(androidx.core.view.GravityCompat.START)
+        }
+// 상단 아이콘 클릭 시 좌측 드로어 오픈
+        toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_open_side) {
-                drawer.openDrawer(GravityCompat.END)
+                drawer.openDrawer(androidx.core.view.GravityCompat.START)
                 true
             } else false
         }
