@@ -29,12 +29,16 @@ class CourseAdapter(
 
         init {
             view.setOnClickListener {
-                val pos = absoluteAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) onCardClick(items[pos])
+                val pos = adapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onCardClick(items[pos])
+                }
             }
             btnStart.setOnClickListener {
-                val pos = absoluteAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) onStartClick(items[pos])
+                val pos = adapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onStartClick(items[pos])
+                }
             }
         }
     }
