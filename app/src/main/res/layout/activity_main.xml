@@ -4,23 +4,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
     <!-- 메인 컨텐츠 -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true">
+            android:fitsSystemWindows="true"
+            android:background="@android:color/white"
+            >
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:title="퀴즈 홈">
+
+                >
 
                 <!-- 툴바는 CollapsingToolbarLayout 안에 배치 -->
                 <com.google.android.material.appbar.MaterialToolbar
@@ -29,7 +34,17 @@
                     android:layout_height="?attr/actionBarSize"
                     android:paddingTop="12dp"
                     app:layout_collapseMode="pin"
-                    app:navigationIconTint="@android:color/white" />
+                    app:navigationIconTint="#57419d"
+                    android:background="@android:color/white"/>
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="142dp"
+                    android:layout_height="151dp"
+                    android:layout_gravity="center_horizontal|top"
+                    android:layout_marginTop="50dp"
+                    android:contentDescription="@string/app_name"
+                    app:srcCompat="@drawable/quit" />
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -103,11 +118,11 @@
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#232323"
+        android:background="#57419d"
         android:fitsSystemWindows="true"
         android:paddingBottom="56dp"
         app:menu="@menu/menu_side"
         app:itemTextColor="@android:color/white"
-        app:itemIconTint="@android:color/white" />
+         />
 
 </androidx.drawerlayout.widget.DrawerLayout>

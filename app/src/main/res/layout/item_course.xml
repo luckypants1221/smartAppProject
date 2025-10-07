@@ -5,13 +5,15 @@
     android:layout_height="wrap_content"
     android:layout_marginVertical="8dp"
     app:cardCornerRadius="16dp"
-    app:cardUseCompatPadding="true">
+    app:cardUseCompatPadding="true"
+    android:background="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="@android:color/white">
 
         <!-- 상단: 진행도 + 텍스트 + 퍼센트 -->
         <LinearLayout
