@@ -27,7 +27,11 @@ android {
         }
     }
 
-
+    buildFeatures {
+        dataBinding = true      // 데이터바인딩 사용 시
+        viewBinding = true      // 뷰바인딩도 같이 쓰면 편함
+        // compose = true        // Jetpack Compose 쓸 때만
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

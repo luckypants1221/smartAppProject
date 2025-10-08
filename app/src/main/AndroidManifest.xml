@@ -4,20 +4,26 @@
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
-
         android:supportsRtl="true"
         android:theme="@style/Theme.MyQuizApp">
 
+        <!-- 메인(런처) 액티비티 -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
         </activity>
+
+        <!-- 퀴즈 액티비티 등록 -->
+        <activity
+            android:name=".ui.quiz.QuizActivity"
+            android:exported="false" />
+        <!-- 외부 인텐트로 열 필요 없으면 exported=false가 안전함.
+             만약 외부(다른 앱)에서 열어야 하면 true로 바꿔. -->
+
     </application>
 
 </manifest>

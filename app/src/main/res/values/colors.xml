@@ -8,6 +8,6 @@
     <color name="purple_700">#3700B3</color>
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
-
-
+    <color name="brand_primary">#57419d</color>
+    <color name="brand_light_bg">#F0ECFF</color>
 </resources>
