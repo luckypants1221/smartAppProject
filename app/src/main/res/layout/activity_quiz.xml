@@ -11,10 +11,31 @@
             android:id="@+id/tvQuestionTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="문제 1번임요"
-            android:textColor="#222222"
+            android:text="10/8 컴활 퀴즈"
+            android:textColor="#333333"
             android:textSize="20sp"
             android:textStyle="bold" />
+        <!-- 진행도 -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressQuiz"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:layout_marginTop="8dp"
+            android:indeterminate="false"
+            app:trackThickness="8dp"
+            app:trackCornerRadius="8dp"
+            app:indicatorColor="@color/brand_primary"
+            app:trackColor="#EDEAF7" />
+
+        <TextView
+            android:id="@+id/tvProgressPercent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="0%"
+            android:textStyle="bold"
+            android:textColor="@color/purple_200" />
+
 
         <!-- 문제 카드 -->
         <com.google.android.material.card.MaterialCardView
@@ -33,6 +54,7 @@
                 android:padding="12dp">
 
                 <ImageView
+                    android:id="@+id/ivJudge"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
                     android:src="@drawable/quit2" />
@@ -142,29 +164,44 @@
             android:layout_marginTop="16dp"
             android:orientation="horizontal"
             android:padding="12dp"
-            android:background="@color/brand_light_bg"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/tvFeedback"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Nicely done!"
-                android:textColor="@color/brand_primary"
-                android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnContinue"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="CONTINUE"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                app:cornerRadius="12dp"
-                app:iconPadding="8dp"
-                app:backgroundTint="@color/brand_primary"
-                android:textColor="@android:color/white" />
         </LinearLayout>
+        <TextView
+            android:id="@+id/explanationContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="풀이"
+            android:textStyle="bold"
+            android:textColor="@color/brand_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvExplanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="정답은 B입니다. laundry는 세탁이라는 의미로…"
+            android:textColor="@color/text_primary" />
+        <TextView
+            android:id="@+id/tvFeedback"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Great!"
+            android:textStyle="bold"
+            android:textColor="@color/brand_primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContinue"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="다음 문제"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/brand_primary"
+            android:textColor="@android:color/white" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -112,6 +112,21 @@
                 app:iconPadding="8dp"
                 app:backgroundTint="#57419d"
                 android:textColor="@android:color/white" />
+            <TextView
+                android:id="@+id/tvExplanationTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="풀이"
+                android:textStyle="bold"
+                android:textColor="@color/brand_primary" />
+
+            <TextView
+                android:id="@+id/tvExplanation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="정답은 B입니다. laundry는 세탁이라는 의미로…"
+                android:textColor="@color/text_primary" />
         </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

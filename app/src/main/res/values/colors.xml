@@ -10,4 +10,5 @@
     <color name="teal_700">#018786</color>
     <color name="brand_primary">#57419d</color>
     <color name="brand_light_bg">#F0ECFF</color>
+    <color name="text_primary">#333333</color>
 </resources>
