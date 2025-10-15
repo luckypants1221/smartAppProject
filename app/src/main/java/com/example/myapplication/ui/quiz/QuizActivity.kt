@@ -4,15 +4,19 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import com.example.myapplication.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
-class QuizActivity : AppCompatActivity() {// 뷰
-private lateinit var progress: LinearProgressIndicator
+
+class QuizActivity : AppCompatActivity() {
+
+    // 뷰
+    private lateinit var progress: LinearProgressIndicator
     private lateinit var tvPercent: TextView
     private lateinit var tvQuestion: TextView
 
@@ -28,22 +32,23 @@ private lateinit var progress: LinearProgressIndicator
     private lateinit var feedbackBar: View
     private lateinit var tvFeedback: TextView
     private lateinit var btnContinue: MaterialButton
-
+    private var skipAutoSave = false
     private lateinit var ivJudge: android.widget.ImageView
 
-    // 진행 상태
+    // 진행 상태 (current는 1-based 문제 인덱스)
     private var current = 1
-    private val total = 5  // 임시 총 문제 수(서버 연동 시 교체)
     private var answered = false
     private var isCorrect = false
+    private lateinit var courseId: String
 
-    // 더미 데이터(서버 연동 전까지 사용)
+    // 더미 문제 (서버 연동 전)
     private data class QuizItem(
         val question: String,
         val choices: List<String>,
         val answerIndex: Int,
         val explanation: String
     )
+
     private val items = listOf(
         QuizItem("사과의 영어는?", listOf("Apple", "Banana", "Grape"), 0, "사과는 Apple."),
         QuizItem("포도의 영어는?", listOf("Orange", "Grape", "Melon"), 1, "포도는 Grape."),
@@ -52,21 +57,42 @@ private lateinit var progress: LinearProgressIndicator
         QuizItem("복숭아의 영어는?", listOf("Peach", "Pear", "Plum"), 0, "복숭아는 Peach.")
     )
 
+    // ✅ 하드코드 대신 실제 문항 수 사용
+    private val total get() = items.size
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
 
+        courseId = intent.getStringExtra(CourseIds.EXTRA_COURSE_ID) ?: CourseIds.COMP_BASIC
+
         bindViews()
         setupProgress()
         bindChoiceClicks()
+
+        val (savedIndex, savedSolved) = ProgressStore.load(this, courseId)
+        // ✅ 완료 상태거나 마지막 인덱스에 걸려 있으면 무조건 리셋
+        if (savedSolved >= total || savedIndex >= total) {
+            current = 1
+            answered = false
+            ProgressStore.save(this, courseId, currentIndex = 1, solvedCount = 0)
+        } else {
+            current = savedIndex.coerceIn(1, total)
+        }
+
         renderQuestion()
+        updateProgress()
+
+        onBackPressedDispatcher.addCallback(this) { showExitConfirmDialog() }
     }
+
+
+    private fun currentCourseId(): String = intent.getStringExtra("courseId") ?: "default"
 
     private fun bindViews() {
         progress = findViewById(R.id.progressQuiz)
         tvPercent = findViewById(R.id.tvProgressPercent)
         tvQuestion = findViewById(R.id.tvQuestion)
-
 
         ivJudge = findViewById(R.id.ivJudge)
         choice1 = findViewById(R.id.choice1)
@@ -83,38 +109,46 @@ private lateinit var progress: LinearProgressIndicator
         btnContinue = findViewById(R.id.btnContinue)
 
         btnContinue.setOnClickListener {
-            android.util.Log.d("quiz","continue clicked, answered=$answered current=$current/$total")
             if (!answered) return@setOnClickListener
 
             if (current < total) {
                 current += 1
-
-                // 다음 문제 진입하기 전, 혹시 남아있을지도 모를 UI 숨김
-                explanationContainer.visibility = View.GONE
-                tvExplanation.text = ""
-                feedbackBar.visibility = View.GONE
-                tvFeedback.text = ""
-
+                hideFeedbacks()
                 renderQuestion()
                 updateProgress()
                 btnContinue.text = if (current == total) "완료" else "다음 문제"
+
+                // 🔁 진행 중 저장
+                ProgressStore.save(this, courseId, currentIndex = current, solvedCount = solvedSoFar())
             } else {
+                // 마지막 문제 → 화면 100% 먼저
+                progress.setProgressCompat(total, true)
+                tvPercent.text = "100%"
                 showCompletion()
             }
         }
+
     }
 
     private fun setupProgress() {
         progress.max = total
+        // 시작 시 이미 푼 개수로 표시 (current는 1-based)
         updateProgress()
         btnContinue.text = if (current == total) "완료" else "다음 문제"
     }
-
+    private fun solvedSoFar(): Int {
+        val base = (current - 1).coerceAtLeast(0)  // 이전까지 완전히 끝낸 개수
+        val extra = if (answered) 1 else 0         // 현재 문제를 이미 풀었다면 +1
+        return (base + extra).coerceAtMost(total)
+    }
+    // ✅ 진행도는 “푼 문제 수 = current - 1” 로 표시
     private fun updateProgress() {
-        progress.setProgressCompat(current.coerceAtMost(total), true)
-        val pct = (current.toFloat() / total * 100).toInt()
+        val solved = solvedSoFar()
+        progress.setProgressCompat(solved, true)
+        val pct = if (total == 0) 0 else (solved.toFloat() / total * 100).toInt()
         tvPercent.text = "$pct%"
     }
+
 
     private fun bindChoiceClicks() {
         choice1.setOnClickListener { onChoiceSelected(0) }
@@ -142,14 +176,14 @@ private lateinit var progress: LinearProgressIndicator
             tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.brand_primary))
             ivJudge.setImageResource(R.drawable.quit3)
             ivJudge.visibility = View.VISIBLE
-            explanationContainer.visibility = View.GONE  // 정답이면 해설 숨김
-            tvExplanation.text = ""                      // 혹시 남은 텍스트 제거
+            explanationContainer.visibility = View.GONE
+            tvExplanation.text = ""
         } else {
             tvFeedback.text = "아쉽다! 오답이에요"
             tvFeedback.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
             ivJudge.setImageResource(R.drawable.quit4)
             ivJudge.visibility = View.VISIBLE
-            tvExplanation.text = item.explanation       // 해설 넣고
+            tvExplanation.text = item.explanation
             explanationContainer.visibility = View.VISIBLE
         }
 
@@ -165,17 +199,18 @@ private lateinit var progress: LinearProgressIndicator
 
         answered = false
         isCorrect = false
-        explanationContainer.visibility = View.GONE
-        tvExplanation.text = ""  // 이전 해설 내용 비우기
-        feedbackBar.visibility = View.GONE
-        tvFeedback.text = ""     // 이전 피드백 문구 비우기
-
-// 선택지 스타일 초기화
+        hideFeedbacks()
         resetChoiceStyles()
 
         ivJudge.setImageResource(R.drawable.quit2)
-// 버튼 텍스트
         btnContinue.text = if (current == total) "완료" else "다음 문제"
+    }
+
+    private fun hideFeedbacks() {
+        explanationContainer.visibility = View.GONE
+        tvExplanation.text = ""
+        feedbackBar.visibility = View.GONE
+        tvFeedback.text = ""
     }
 
     private fun resetChoiceStyles() {
@@ -199,19 +234,18 @@ private lateinit var progress: LinearProgressIndicator
             card.strokeWidth = 0
             tv.setTextColor(ContextCompat.getColor(this, R.color.brand_primary))
         }
+
         fun styleWrong(card: MaterialCardView, tv: TextView) {
             card.setCardBackgroundColor(Color.parseColor("#FFF1F1"))
             card.strokeWidth = 0
             tv.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
         }
 
-        // 정답 강조
         when (correctIndex) {
             0 -> styleCorrect(choice1, tvChoice1)
             1 -> styleCorrect(choice2, tvChoice2)
             2 -> styleCorrect(choice3, tvChoice3)
         }
-        // 오답 선택이면 그 선택지만 오답 스타일
         if (selectedIndex != correctIndex) {
             when (selectedIndex) {
                 0 -> styleWrong(choice1, tvChoice1)
@@ -221,12 +255,55 @@ private lateinit var progress: LinearProgressIndicator
         }
     }
 
+    private fun showExitConfirmDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("퀴즈 나가기")
+            .setMessage("나가면 진행 상황이 저장돼요. 나갈까요?")
+            .setNegativeButton("취소") { d, _ -> d.dismiss() }
+            .setPositiveButton("나가기") { d, _ ->
+                d.dismiss()
+                // ✅ 지금까지 푼 개수 기준으로 저장 (마지막 문제 풀고 바로 나가도 100%)
+                ProgressStore.saveSync(
+                    this, courseId,
+                    currentIndex = current,           // 위치는 현재 문제
+                    solvedCount = solvedSoFar()       // 개수는 푼 만큼(최대 total)
+                )
+                finish()
+            }
+            .show()
+    }
+
     private fun showCompletion() {
-        val dlg = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("퀴즈 완료")
-            .setMessage("모든 문제를 풀었어요. 수고했어!")
-            .setPositiveButton("확인") { d, _ -> d.dismiss(); finish() }
-            .create()
-        dlg.show()
+            .setMessage("모든 문제를 다 풀었어요! 처음부터 다시 풀까요?")
+            .setNegativeButton("닫기") { d, _ ->
+                d.dismiss()
+                skipAutoSave = true
+                // ✅ 메인 100% 보이도록 확정 기록
+                ProgressStore.saveSync(this, courseId, currentIndex = total, solvedCount = total)
+                finish()
+            }
+            .setPositiveButton("다시 풀기") { d, _ ->
+                d.dismiss()
+                skipAutoSave = false
+                current = 1
+                answered = false
+                ProgressStore.save(this, courseId, currentIndex = 1, solvedCount = 0)
+
+                hideFeedbacks()
+                resetChoiceStyles()
+                renderQuestion()
+                updateProgress() // 0%
+                btnContinue.text = "다음 문제"
+            }
+            .show()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (skipAutoSave) return
+        // ✅ 항상 solvedSoFar()로 저장
+        ProgressStore.save(this, courseId, currentIndex = current, solvedCount = solvedSoFar())
     }
 }
